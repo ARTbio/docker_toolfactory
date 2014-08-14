@@ -6,9 +6,9 @@
   </requirements>
   <command interpreter="python">
 #if ( $__user_email__ not in $__admin_users__ ):
-     rgToolFactory.py --bad_user $__user_email__
+     DockerToolFactory.py --bad_user $__user_email__
 #else:
-    rgToolFactory.py --script_path "$runme" --interpreter "$interpreter" 
+    DockerToolFactory.py --script_path "$runme" --interpreter "$interpreter" 
      --tool_name "$tool_name"  --user_email "$__user_email__"
     #if $make_TAB.value=="yes":
        --output_tab "$tab_file"

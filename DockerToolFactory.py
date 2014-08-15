@@ -192,9 +192,10 @@ def switch_to_docker(opts):
     volumes=binds.keys()
     cmd=['python', '-u']+sys.argv[:12]+[abspath(opts.output_dir)]+sys.argv[13:]+['--dockerized']+['1']
     print cmd
+    user=os.getenv('USER')
     container=docker_client.create_container(
         image='toolfactory/custombuild:latest',
-        user='galaxy',
+        user=user,
         volumes=volumes,
         command=cmd
         )

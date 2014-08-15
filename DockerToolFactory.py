@@ -171,15 +171,14 @@ def construct_bind(host_path, container_path=False, binds=None, ro=True):
 def switch_to_docker(opts):
     import docker #need local import, as container does not have docker-py
     docker_client=docker.Client()
+    abspath=os.path.abspath
     toolfactory_path=abspath(sys.argv[0])
-    abspath=os.path.split(toolfactory_path)[0]
-    edit_dockerfile('/home/galaxy/galaxy_docker/Dockerfile')
-    build_docker('/home/galaxy/galaxy_docker/Dockerfile', docker_client)
+    dockerfile=os.path.dirname(toolfactory_path)+'Dockerfile'
+    edit_dockerfile(dockerfile)
+    build_docker(dockerfile, docker_client)
     binds=construct_bind(host_path=opts.script_path, ro=False)
     binds=construct_bind(binds=binds, host_path=opts.input_tab, ro=True)
     binds=construct_bind(binds=binds, host_path=opts.output_tab, ro=False)
-#    binds=construct_bind(binds=binds, host_path=abspath(opts.output_dir), container_path='/home/galaxy/job_working_directory', ro=False)
-#    sys.argv[10]=abspath(opts.output_dir)
     binds=construct_bind(binds=binds, host_path=abspath(opts.output_dir), ro=False)
     if opts.make_HTML:
         binds=construct_bind(binds=binds, host_path=opts.output_html, ro=False)
@@ -188,7 +187,6 @@ def switch_to_docker(opts):
         binds=construct_bind(binds=binds, host_path=opts.help_text, ro=True)
     binds=construct_bind(binds=binds, host_path=toolfactory_path)
     volumes=binds.keys()
-    #cmd=['ls', '-l', '../']
     cmd=['python', '-u']+sys.argv[:12]+[abspath(opts.output_dir)]+sys.argv[13:]+['--dockerized']+['1']
     print cmd
     container=docker_client.create_container(

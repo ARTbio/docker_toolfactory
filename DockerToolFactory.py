@@ -171,7 +171,8 @@ def construct_bind(host_path, container_path=False, binds=None, ro=True):
 def switch_to_docker(opts):
     import docker #need local import, as container does not have docker-py
     docker_client=docker.Client()
-    abspath=os.path.abspath
+    toolfactory_path=abspath(sys.argv[0])
+    abspath=os.path.split(toolfactory_path)[0]
     edit_dockerfile('/home/galaxy/galaxy_docker/Dockerfile')
     build_docker('/home/galaxy/galaxy_docker/Dockerfile', docker_client)
     binds=construct_bind(host_path=opts.script_path, ro=False)
@@ -185,11 +186,10 @@ def switch_to_docker(opts):
     if opts.make_Tool:
         binds=construct_bind(binds=binds, host_path=opts.new_tool, ro=False)
         binds=construct_bind(binds=binds, host_path=opts.help_text, ro=True)
-    toolfactory_path=abspath(sys.argv[0])
     binds=construct_bind(binds=binds, host_path=toolfactory_path)
     volumes=binds.keys()
     #cmd=['ls', '-l', '../']
-    cmd=['python', '-u']+sys.argv[:12]+[abspath(opts.output_dir)]+sys.argv[13:-2]+['--dockerized']+['1']
+    cmd=['python', '-u']+sys.argv[:12]+[abspath(opts.output_dir)]+sys.argv[13:]+['--dockerized']+['1']
     print cmd
     container=docker_client.create_container(
         image='toolfactory/custombuild:latest',
@@ -755,7 +755,6 @@ def main():
     a('--tool_version',default=None)
     a('--include_dependencies',default=None)
     a('--dockerized',default=0)
-    a('--dockerfile', default=None)
     opts = op.parse_args()
     assert not opts.bad_user,'UNAUTHORISED: %s is NOT authorized to use this tool until Galaxy admin adds %s to admin_users in universe_wsgi.ini' % (opts.bad_user,opts.bad_user)
     assert opts.tool_name,'## Tool Factory expects a tool name - eg --tool_name=DESeq'

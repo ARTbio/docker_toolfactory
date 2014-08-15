@@ -6,13 +6,22 @@
 This is a fork of toolfactory that makes use of Docker to sandbox the generated script.
 As such you need to have the system user under which galaxy tools are executed be able to run Docker. On Ubuntu you can do this by
 adding your galaxy user to the docker group (http://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo).
+Here is the short form for installing Docker on Ubuntu:
+
+sudo apt-get install docker.io
+sudo gpasswd -a galaxy docker
+sudo service docker.io restart
+
+Eventually the galaxy process might need ot be restarted.
+
 Note that this could bring severe security problems in case untrusted users can become this user.
+If you want to use this tool, read and understand the following article:
+https://docs.docker.com/articles/security/#docker-daemon-attack-surface
 
 Work is ongoing, some important features are missing, like being able to manage containers and
 to limit resource useage.
 
-This is alpha-stage, potentially dangerous stuff.
-
+This is an alpha-stage, potentially dangerous tool.
 
 
 Please cite:

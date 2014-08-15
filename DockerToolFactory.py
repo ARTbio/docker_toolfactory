@@ -150,8 +150,11 @@ def build_docker(dockerfile, docker_client):
     if len(image_exists)==1:
         print 'docker container exists, skipping build'
         return
-    docker_dir=os.path.dirname(dockerfile)
-    docker_client.build(path=docker_dir, tag="toolfactory/custombuild")
+    print "Building Docker image, using Dockerfile:{0}".format(dockerfile)
+    build_process=docker_client.build(fileobj=open(dockerfile, 'r'), tag="toolfactory/custombuild")
+    print "succesfully dispatched docker build process, building now"
+    build_log=[line for line in build_process]
+    #print build_log
 
 def construct_bind(host_path, container_path=False, binds=None, ro=True):
     if not binds:
@@ -173,7 +176,7 @@ def switch_to_docker(opts):
     docker_client=docker.Client()
     abspath=os.path.abspath
     toolfactory_path=abspath(sys.argv[0])
-    dockerfile=os.path.dirname(toolfactory_path)+'Dockerfile'
+    dockerfile=os.path.dirname(toolfactory_path)+'/Dockerfile'
     edit_dockerfile(dockerfile)
     build_docker(dockerfile, docker_client)
     binds=construct_bind(host_path=opts.script_path, ro=False)

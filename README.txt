@@ -2,6 +2,19 @@
 # Install this tool on a private Galaxy ONLY
 # Please NEVER on a public or production instance
 # updated august 8 2014 to fix bugs reported by Marius van den Beek
+
+This is a fork of toolfactory that makes use of Docker to sandbox the generated script.
+As such you need to have the system user under which galaxy tools are executed be able to run Docker. On Ubuntu you can do this by
+adding your galaxy user to the docker group (http://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo).
+Note that this could bring severe security problems in case untrusted users can become this user.
+
+Work is ongoing, some important features are missing, like being able to manage containers and
+to limit resource useage.
+
+This is alpha-stage, potentially dangerous stuff.
+
+
+
 Please cite:
 http://bioinformatics.oxfordjournals.org/cgi/reprint/bts573?ijkey=lczQh1sWrMwdYWJ&keytype=ref 
 if you use this tool in your published work.

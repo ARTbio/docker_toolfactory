@@ -15,6 +15,7 @@
        --output_tab "$tab_file"
     #end if
     #if $makeMode.make_Tool=="yes":
+      --output_format "$out_format"
       --make_Tool "$makeMode.make_Tool"
       --tool_desc "$makeMode.tool_desc"
       --tool_version "$makeMode.tool_version"
@@ -34,13 +35,26 @@
 	#for i in $input_files:
 	  $i.input
 	#end for
+        #for i in $input_files:
+          --input_format
+          #if str($i.in_format) == "None":
+            "Any"
+          #else 
+            "$i.in_format"
+          #end if
+        #end for
     #end if
 #end if 
   </command>
   <inputs>
-    <repeat name="input_files" title="input files">
+    <repeat name="input_files" title="Select input files">
       <param name="input"  type="data"  label="Select an input file from your history" optional="true" size="120"
          help="Most scripts will need an input - your script MUST be ready for whatever format you choose"/>
+      <param name="in_format" type="select" optional="true" multiple="true" label="Optional: Select the allowed input datatype(s) for your tool/script">
+        <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
+          <column name="value" index="0"/>
+        </options>
+    </param>
     </repeat>
     <param name="tool_name" type="text" value="My dynamic script"   label="New tool ID and title for outputs" size="60"
          help="This will become the toolshed repository name so please choose thoughtfully to avoid namespace clashes with other tool writers">
@@ -87,11 +101,10 @@
         <option value="yes" selected="true">My script writes to a new history output</option>
         <option value="">I do not want a new history output file</option>
     </param>
-    <param name="out_format" type="select" label="Galaxy datatype for your tool's output file if any" help="You may need to edit the xml to extend this list">
-    <option value="tabular" selected="true">Tabular</option>
-    <option value="interval">Interval</option>
-    <option value="gz">gz</option>
-    <option value="text">text</option>
+    <param name="out_format" type="select" label="Select the datatype that your tool/script produces" help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml">
+      <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
+        <column name="value" index="0"/>
+      </options>
     </param>
     <param name="interpreter" type="select" label="Select the interpreter for your code. This must be available on the path of the execution host">
         <option value="Rscript" selected="true">Rscript</option>
@@ -109,13 +122,12 @@
      </param>
   </inputs>
   <outputs>
-    <data format="tabular" name="tab_file" label="${tool_name}.${out_format}">
-        <filter>make_TAB=="yes"</filter>
-        <change_format>
-            <when input="out_format" value="interval"  format="interval" />
-            <when input="out_format" value="gz" format="gz" />
-            <when input="out_format" value="text"  format="text"  />
-         </change_format>
+    <data format="input" name="tab_file" label="${tool_name}.${out_format}">
+      <actions>
+        <action type="format">
+              <option type="from_param" name="out_format" />
+        </action>
+      </actions>
     </data>
     <data format="html" name="html_file" label="${tool_name}.html">
         <filter>make_HTML == "yes"</filter>

@@ -204,11 +204,11 @@ class ScriptRunner:
             --tool_name "reverse" --input_tab "$input1" --output_tab "$tab_file" 
             </command>
             <inputs>
-            <param name="input1"  type="data" format="tabular" label="Select a suitable input file from your history"/><param name="job_name" type="text" label="Supply a name for the outputs to remind you what they contain" value="reverse"/>
+            <param name="input1"  type="data" format="tabular" label="Select a suitable input file from your history"/>
 
             </inputs>
             <outputs>
-            <data format=opts.output_format name="tab_file" label="${job_name}"/>
+            <data format=opts.output_format name="tab_file"/>
 
             </outputs>
             <help>
@@ -276,7 +276,6 @@ o.close()
         <tests>
         <test>
         <param name="input1" value="%(test1Input)s" ftype="tabular"/>
-        <param name="job_name" value="test1"/>
         <param name="runMe" value="$runMe"/>
         <output name="tab_file" file="%(test1Output)s" ftype="tabular"/>
         </test>
@@ -286,7 +285,6 @@ o.close()
         <tests>
         <test>
         <param name="input1" value="%(test1Input)s" ftype="tabular"/>
-        <param name="job_name" value="test1"/>
         <param name="runMe" value="$runMe"/>
         <output name="html_file" file="%(test1HTML)s" ftype="html" lines_diff="5"/>
         </test>
@@ -295,7 +293,6 @@ o.close()
         tooltestsBoth = """<tests>
         <test>
         <param name="input1" value="%(test1Input)s" ftype="tabular"/>
-        <param name="job_name" value="test1"/>
         <param name="runMe" value="$runMe"/>
         <output name="tab_file" file="%(test1Output)s" ftype="tabular" />
         <output name="html_file" file="%(test1HTML)s" ftype="html" lines_diff="10"/>

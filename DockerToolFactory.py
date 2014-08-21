@@ -359,7 +359,7 @@ o.close()
         else:
             xdict['command_outputs'] += ' --output_dir "./"' 
         print self.opts.output_tab
-        if not self.opts.output_tab:
+        if not self.opts.output_tab == 'None':
             xdict['command_outputs'] += ' --output_tab "$tab_file"'
             xdict['outputs'] += ' <data format="%s" name="tab_file"/>\n' % self.outFormats
         xdict['command'] = newCommand % xdict
@@ -401,7 +401,7 @@ o.close()
 	    for i in self.opts.input_tab:
 		  print i
 	          shutil.copyfile(i,os.path.join(testdir,self.test1Input))
-            if not self.opts.output_tab:
+            if not self.opts.output_tab == 'None':
                 shutil.copyfile(self.opts.output_tab,os.path.join(testdir,self.test1Output))
             if self.opts.make_HTML:
                 shutil.copyfile(self.opts.output_html,os.path.join(testdir,self.test1HTML))

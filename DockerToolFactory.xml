@@ -123,11 +123,12 @@
   </inputs>
   <outputs>
     <data format="input" name="tab_file" label="${tool_name}.${out_format}">
-      <actions>
-        <action type="format">
-              <option type="from_param" name="out_format" />
-        </action>
-      </actions>
+      <filter>make_TAB == "yes"</filter>
+        <actions>
+          <action type="format">
+                <option type="from_param" name="out_format" />
+          </action>
+        </actions>
     </data>
     <data format="html" name="html_file" label="${tool_name}.html">
         <filter>make_HTML == "yes"</filter>

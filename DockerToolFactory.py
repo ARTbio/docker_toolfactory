@@ -95,6 +95,7 @@ def construct_bind(host_path, container_path=False, binds=None, ro=True):
             if not container_path:
                 container_path=host_path[k]
             binds[host_path[k]]={'bind':container_path, 'ro':ro}
+            container_path=False #could be more elegant
         return binds
     else:
         if not container_path:
@@ -110,9 +111,11 @@ def switch_to_docker(opts):
     edit_dockerfile(dockerfile)
     image_id=build_docker(dockerfile, docker_client)
     binds=construct_bind(host_path=opts.script_path, ro=False)
-    binds=construct_bind(binds=binds, host_path=opts.input_tab, ro=True)
-    binds=construct_bind(binds=binds, host_path=opts.output_tab, ro=False)
     binds=construct_bind(binds=binds, host_path=abspath(opts.output_dir), ro=False)
+    if len(opts.input_tab)>0:
+        binds=construct_bind(binds=binds, host_path=opts.input_tab, ro=True)
+    if not opts.output_tab == 'None':
+        binds=construct_bind(binds=binds, host_path=opts.output_tab, ro=False)
     if opts.make_HTML:
         binds=construct_bind(binds=binds, host_path=opts.output_html, ro=False)
     if opts.make_Tool:
@@ -120,7 +123,7 @@ def switch_to_docker(opts):
         binds=construct_bind(binds=binds, host_path=opts.help_text, ro=True)
     binds=construct_bind(binds=binds, host_path=toolfactory_path)
     volumes=binds.keys()
-    sys.argv=[abspath(opts.output_dir) if sys.argv[i-1]=='--output_dir' else arg for i,arg in enumerate(sys.argv)]
+    sys.argv=[abspath(opts.output_dir) if sys.argv[i-1]=='--output_dir' else arg for i,arg in enumerate(sys.argv)] ##inject absolute path of working_dir
     cmd=['python', '-u']+sys.argv+['--dockerized', '1']
     container=docker_client.create_container(
         image=image_id,
@@ -130,10 +133,8 @@ def switch_to_docker(opts):
         )
     docker_client.start(container=container[u'Id'], binds=binds)
     docker_client.wait(container=container[u'Id'])
-    logs=docker_client.logs(container=container[u'Id'])    
-
-    print container[u'Id']
-    print logs
+    logs=docker_client.logs(container=container[u'Id'])
+    print "".join([log for log in logs])
 
 class ScriptRunner:
     """class is a wrapper for an arbitrary script
@@ -185,6 +186,8 @@ class ScriptRunner:
             a('-') # stdin
 	for input in opts.input_tab:
 	  a(input) 
+        if opts.output_tab == 'None': #If tool generates only HTML, set output name to toolname
+            a(str(self.toolname)+'.out')
         a(opts.output_tab)
         self.outFormats = opts.output_format
         self.inputFormats = [formats for formats in opts.input_formats]
@@ -355,10 +358,12 @@ o.close()
             xdict['outputs'] +=  ' <data format="html" name="html_file"/>\n'
         else:
             xdict['command_outputs'] += ' --output_dir "./"' 
-        if self.opts.output_tab <> 'None':
+        print self.opts.output_tab
+        if not self.opts.output_tab:
             xdict['command_outputs'] += ' --output_tab "$tab_file"'
             xdict['outputs'] += ' <data format="%s" name="tab_file"/>\n' % self.outFormats
         xdict['command'] = newCommand % xdict
+        print xdict['outputs']
         xmls = newXML % xdict
         xf = open(self.xmlfile,'w')
         xf.write(xmls)
@@ -396,7 +401,7 @@ o.close()
 	    for i in self.opts.input_tab:
 		  print i
 	          shutil.copyfile(i,os.path.join(testdir,self.test1Input))
-            if self.opts.output_tab <> 'None':
+            if not self.opts.output_tab:
                 shutil.copyfile(self.opts.output_tab,os.path.join(testdir,self.test1Output))
             if self.opts.make_HTML:
                 shutil.copyfile(self.opts.output_html,os.path.join(testdir,self.test1HTML))
@@ -630,7 +635,7 @@ o.close()
                 ste.close()
                 err = open(self.elog,'r').readlines()
                 if retval <> 0 and err: # problem
-                    print >> sys.stderr,err
+                    print >> sys.stderr,err #same problem, need to capture docker stdin/stdout
             if self.opts.make_HTML:
                 self.makeHtml()
         return retval
@@ -668,8 +673,8 @@ def main():
     a('--interpreter',default=None)
     a('--output_dir',default='./')
     a('--output_html',default=None)
-    a('--input_tab',default="None", nargs='*')
-    a('--output_tab',default="None")
+    a('--input_tab',default='None', nargs='*')
+    a('--output_tab',default='None')
     a('--user_email',default='Unknown')
     a('--bad_user',default=None)
     a('--make_Tool',default=None)
@@ -683,7 +688,6 @@ def main():
     a('--output_format', default='tabular')
     a('--input_format', dest='input_formats', action='append', default=[])
     opts = op.parse_args()
-    print opts.input_formats
     assert not opts.bad_user,'UNAUTHORISED: %s is NOT authorized to use this tool until Galaxy admin adds %s to admin_users in universe_wsgi.ini' % (opts.bad_user,opts.bad_user)
     assert opts.tool_name,'## Tool Factory expects a tool name - eg --tool_name=DESeq'
     assert opts.interpreter,'## Tool Factory wrapper expects an interpreter - eg --interpreter=Rscript'

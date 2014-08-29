@@ -15,7 +15,7 @@ sudo apt-get install lxc-docker
 sudo gpasswd -a galaxy docker
 sudo service docker restart
 
-Eventually the galaxy process might need to be restarted.
+Eventually the galaxy process might need ot be restarted.
 
 Note that this could bring severe security problems in case untrusted users can become this user.
 If you want to use this tool, read and understand the following article:

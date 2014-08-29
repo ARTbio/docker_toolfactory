@@ -48,6 +48,9 @@ RUN Rscript -e 'install.packages("ggplot2", dependencies=TRUE, repos="http://cra
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y imagemagick
 RUN DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y graphicsmagick-imagemagick-compat
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y exonerate
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y bedtools
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wget
 
 
 RUN adduser galaxy -u 1002

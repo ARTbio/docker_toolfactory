@@ -193,7 +193,7 @@ class ScriptRunner:
           param, value=param.split(',')
           a('--'+param)
           a(value)
-        print self.cl
+        #print self.cl
         self.outFormats = opts.output_format
         self.inputFormats = [formats for formats in opts.input_formats]
         self.test1Input = '%s_test1_input.xls' % self.toolname
@@ -363,12 +363,12 @@ o.close()
             xdict['outputs'] +=  ' <data format="html" name="html_file"/>\n'
         else:
             xdict['command_outputs'] += ' --output_dir "./"' 
-        print self.opts.output_tab
+        #print self.opts.output_tab
         if not self.opts.output_tab:
             xdict['command_outputs'] += ' --output_tab "$tab_file"'
             xdict['outputs'] += ' <data format="%s" name="tab_file"/>\n' % self.outFormats
         xdict['command'] = newCommand % xdict
-        print xdict['outputs']
+        #print xdict['outputs']
         xmls = newXML % xdict
         xf = open(self.xmlfile,'w')
         xf.write(xmls)
@@ -404,7 +404,7 @@ o.close()
             testdir = os.path.join(tdir,'test-data')
             os.mkdir(testdir) # make tests directory
 	    for i in self.opts.input_tab:
-		  print i
+		  #print i
 	          shutil.copyfile(i,os.path.join(testdir,self.test1Input))
             if not self.opts.output_tab:
                 shutil.copyfile(self.opts.output_tab,os.path.join(testdir,self.test1Output))

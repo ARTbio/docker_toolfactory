@@ -6,16 +6,13 @@
       <requirement type="package" version="0.4.0">docker-py</requirement>
   </requirements>
   <command interpreter="python">
-#if ( $__user_email__ not in $__admin_users__ ):
-     DockerToolFactory.py --bad_user $__user_email__
-#else:
     DockerToolFactory.py --script_path "$runme" --interpreter "$interpreter" 
      --tool_name "$tool_name"  --user_email "$__user_email__"
     #if $make_TAB.value=="yes":
        --output_tab "$tab_file"
-       --output_format "$output_mode.out_format"
     #end if
     #if $makeMode.make_Tool=="yes":
+      --output_format "$out_format"
       --make_Tool "$makeMode.make_Tool"
       --tool_desc "$makeMode.tool_desc"
       --tool_version "$makeMode.tool_version"
@@ -27,16 +24,13 @@
     #end if
     #if $make_HTML.value=="yes":
       --output_dir "$html_file.files_path" --output_html "$html_file" --make_HTML "yes"
-    #else if $output_mode.output_number=="no":
-      --output_id $tab_file.id 
-      --output_dir "."
     #else:
        --output_dir "."
     #end if
     #if $additional_parameters != 'None':
       #for i in $additional_parameters:
 	--additional_parameters
-        $i.param_name,$i.param_value
+        "$i.param_name, $i.param_value"
       #end for
     #end if
     #if $input_files != 'None':
@@ -53,7 +47,6 @@
           #end if
         #end for
     #end if
-#end if 
   </command>
   <inputs>
     <repeat name="input_files" title="Select input files">
@@ -66,15 +59,17 @@
     </param>
     </repeat>
     <repeat name="additional_parameters" title="Set additional parameters">
-      <param name="param_name" type="text" value="parameter_name" label="Choose a parameter name" size="10">
+      <param name="param_name" type="text" value="parameter_name" label="Choose a parameter name" size="20">
         <sanitizer invalid_char="">
           <valid initial="string.letters,string.digits"><add value="@_."/></valid>>
         </sanitizer>
       </param>
-     <param name="param_value" type="text" value="parameter_value" label="Enter a parameter value" size="10">
-        <sanitizer invalid_char="">
-          <valid initial="string.letters,string.digits"><add value="@_."/></valid>>
-        </sanitizer>
+     <param name="param_value" type="text" value="parameter_value" label="Enter a parameter value" size="50">
+       <sanitizer>
+         <valid initial="string.printable">
+         </valid>
+         <mapping initial="none"/>
+       </sanitizer>
      </param>
     </repeat> 
     <param name="tool_name" type="text" value="My dynamic script"   label="New tool ID and title for outputs" size="60"
@@ -107,6 +102,7 @@
                 <option value="">Rely on system ghostscript and graphicsmagick rather than include these as dependencies</option>
                 <option value="yes" selected="true">Include dependencies so target installations will always work if HTML is being generated</option>
             </param>
+
         </when>
         <when value = "">
         </when>
@@ -121,30 +117,11 @@
         <option value="yes" selected="true">My script writes to a new history output</option>
         <option value="">I do not want a new history output file</option>
     </param>
-    <conditional name="output_mode">
-      <param name="output_number" type="select" label="Does the tool produce a fixed number of output files?" help="If you select no, all output files in the output directory will be selected and put in the history">
-      <option value="yes" selected="true">Yes</option>
-      <option value="no">No</option>
-      </param>
-      <when value="yes">
-        <repeat name="output_list" title="Output files" default="1">
-          <param name="out_format" type="select" label="Select the datatype that your tool/script produces" help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml">
-            <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
-              <column name="value" index="0"/>
-            </options>
-          </param>
-          <param name="out_name" type="text" value="output" title="Name the output file" help="Select a name that will appear in the history">
-          </param>
-        </repeat>
-      </when>
-      <when value="no">
-       <param name="out_format" type="select" label="Select the datatype that your tool/script produces" help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml">
-          <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
-            <column name="value" index="0"/>
-          </options>
-        </param>
-      </when>
-    </conditional>
+    <param name="out_format" type="select" label="Select the datatype that your tool/script produces" help="If your datatype is not listed here, it has to be added in galaxy's datatypes_conf.xml">
+      <options from_parameter="tool.app.datatypes_registry.upload_file_formats">
+        <column name="value" index="0"/>
+      </options>
+    </param>
     <param name="interpreter" type="select" label="Select the interpreter for your code. This must be available on the path of the execution host">
         <option value="Rscript" selected="true">Rscript</option>
         <option value="python">python</option>
@@ -161,11 +138,11 @@
      </param>
   </inputs>
   <outputs>
-    <data format="input" name="tab_file" label="${tool_name}.${output_mode.out_format}">
+    <data format="input" name="tab_file" label="${tool_name}.${out_format}">
       <filter>make_TAB == "yes"</filter>
         <actions>
           <action type="format">
-                <option type="from_param" name="output_mode.out_format" />
+                <option type="from_param" name="out_format" />
           </action>
         </actions>
     </data>
@@ -189,8 +166,6 @@ ${makeMode.help_text}
 .. class:: warningmark
 
 **Details and attribution** GTF_
-
-**Local Admins ONLY** Only users whose IDs found in the local admin_user configuration setting in universe_wsgi.ini can run this tool.
 
 **If you find a bug** please raise an issue at the bitbucket repository GTFI_
 

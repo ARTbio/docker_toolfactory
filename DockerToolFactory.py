@@ -48,10 +48,6 @@ def timenow():
     """
     return time.strftime('%d/%m/%Y %H:%M:%S', time.localtime(time.time()))
 
-def walk_dirs(arg, dirname, names):
-    '''helper function for walking the output dir and collecting file paths'''
-    arg.extend([(os.path.join(dirname, name),os.path.splitext(name)) for name in names if not os.path.isdir(os.path.join(dirname, name))])
-
 html_escape_table = {
      "&": "&amp;",
      ">": "&gt;",
@@ -112,16 +108,14 @@ def switch_to_docker(opts):
     docker_client=docker.Client()
     toolfactory_path=abspath(sys.argv[0])
     dockerfile=os.path.dirname(toolfactory_path)+'/Dockerfile'
-    print os.path.exists(dockerfile)
     edit_dockerfile(dockerfile)
     image_id=build_docker(dockerfile, docker_client)
     binds=construct_bind(host_path=opts.script_path, ro=False)
     binds=construct_bind(binds=binds, host_path=abspath(opts.output_dir), ro=False)
     if len(opts.input_tab)>0:
         binds=construct_bind(binds=binds, host_path=opts.input_tab, ro=True)
-#    if not len(opts.output_tab) == 0:
-    for out_file in opts.output_tab:
-        binds=construct_bind(binds=binds, host_path=out_file, ro=False)
+    if not opts.output_tab == 'None':
+        binds=construct_bind(binds=binds, host_path=opts.output_tab, ro=False)
     if opts.make_HTML:
         binds=construct_bind(binds=binds, host_path=opts.output_html, ro=False)
     if opts.make_Tool:
@@ -130,7 +124,6 @@ def switch_to_docker(opts):
     binds=construct_bind(binds=binds, host_path=toolfactory_path)
     volumes=binds.keys()
     sys.argv=[abspath(opts.output_dir) if sys.argv[i-1]=='--output_dir' else arg for i,arg in enumerate(sys.argv)] ##inject absolute path of working_dir
-    #sys.argv[opts.output_id if sys.argv]
     cmd=['python', '-u']+sys.argv+['--dockerized', '1']
     container=docker_client.create_container(
         image=image_id,
@@ -138,7 +131,7 @@ def switch_to_docker(opts):
         volumes=volumes,
         command=cmd
         )
-    docker_client.start(container=container[u'Id'], binds=binds, network_mode='host')
+    docker_client.start(container=container[u'Id'], binds=binds)
     docker_client.wait(container=container[u'Id'])
     logs=docker_client.logs(container=container[u'Id'])
     print "".join([log for log in logs])
@@ -191,16 +184,17 @@ class ScriptRunner:
             a(self.sfile)
         else:
             a('-') # stdin
+	for input in opts.input_tab:
+	  a(input) 
+        if opts.output_tab == 'None': #If tool generates only HTML, set output name to toolname
+            a(str(self.toolname)+'.out')
+        a(opts.output_tab)
 	for param in opts.additional_parameters:
           param, value=param.split(',')
           a('--'+param)
           a(value)
-	for input in opts.input_tab:
-	  a(input) 
-        if len(opts.output_tab) == 0: #If tool generates only HTML, set output name to toolname
-            a(str(self.toolname)+'.out')
-        [a(out_file) for out_file in opts.output_tab	]
-        self.outFormats = [formats for formats in opts.output_format]
+        print self.cl
+        self.outFormats = opts.output_format
         self.inputFormats = [formats for formats in opts.input_formats]
         self.test1Input = '%s_test1_input.xls' % self.toolname
         self.test1Output = '%s_test1_output.xls' % self.toolname
@@ -222,7 +216,7 @@ class ScriptRunner:
 
             </inputs>
             <outputs>
-            <data format="tabular" name="tab_file"/>
+            <data format=opts.output_format name="tab_file"/>
 
             </outputs>
             <help>
@@ -348,7 +342,7 @@ o.close()
             xdict['tooldesc'] = '<description>%s</description>' % self.opts.tool_desc
         else:
             xdict['tooldesc'] = ''
-        xdict['command_outputs'] = '--output_tab' 
+        xdict['command_outputs'] = '' 
         xdict['outputs'] = '' 
         if self.opts.input_tab <> 'None':
             xdict['command_inputs'] = '--input_tab'
@@ -369,11 +363,12 @@ o.close()
             xdict['outputs'] +=  ' <data format="html" name="html_file"/>\n'
         else:
             xdict['command_outputs'] += ' --output_dir "./"' 
-        #if not len(self.opts.output_tab) == 0:
-        for i,out_file in enumerate(self.opts.output_tab):    
-            xdict['command_outputs'] += ' "$tab_file"'
-            xdict['outputs'] += ' <data format="{0}" name="tab_file{1}"/>\n'.format(self.outFormats[i], i+1)
+        print self.opts.output_tab
+        if not self.opts.output_tab:
+            xdict['command_outputs'] += ' --output_tab "$tab_file"'
+            xdict['outputs'] += ' <data format="%s" name="tab_file"/>\n' % self.outFormats
         xdict['command'] = newCommand % xdict
+        print xdict['outputs']
         xmls = newXML % xdict
         xf = open(self.xmlfile,'w')
         xf.write(xmls)
@@ -409,9 +404,10 @@ o.close()
             testdir = os.path.join(tdir,'test-data')
             os.mkdir(testdir) # make tests directory
 	    for i in self.opts.input_tab:
+		  print i
 	          shutil.copyfile(i,os.path.join(testdir,self.test1Input))
-            for i in self.opts.output_tab:
-                shutil.copyfile(i,os.path.join(testdir,self.test1Output))##TODO: Work on this for multiple outputs
+            if not self.opts.output_tab:
+                shutil.copyfile(self.opts.output_tab,os.path.join(testdir,self.test1Output))
             if self.opts.make_HTML:
                 shutil.copyfile(self.opts.output_html,os.path.join(testdir,self.test1HTML))
             if self.opts.output_dir:
@@ -642,17 +638,6 @@ o.close()
             if self.opts.output_dir:
                 sto.close()
                 ste.close()
-                if self.opts.output_id:
-                  output_file_paths=[]
-                  os.path.walk(self.opts.output_dir, walk_dirs, output_file_paths)
-                  new_out_path=[]
-                  for i,path in enumerate(output_file_paths):
-                    if i==0:
-                      new_out_path.append(self.opts.output_tab[0])
-                    else:
-                      new_out_path.append('primary_{0}_'.format(self.opts.output_id)+path[1][0]+'_visible_{0}'.format(self.opts.output_format[0]))
-                  for i, path in enumerate(output_file_paths):
-                    shutil.move(path[0], new_out_path[i])
                 err = open(self.elog,'r').readlines()
                 if retval <> 0 and err: # problem
                     print >> sys.stderr,err #same problem, need to capture docker stdin/stdout
@@ -673,18 +658,8 @@ o.close()
         else:
             p = subprocess.Popen(self.cl,shell=False)            
         retval = p.wait()
-        sto.close()
         if self.opts.output_dir:
-              output_file_paths=[]
-              os.path.walk(self.opts.output_dir+'/output', walk_dirs, output_file_paths)
-              new_out_path=[]
-              for i,path in enumerate(output_file_paths):
-                if i==0:
-                  new_out_path.append(self.opts.output_tab[0])
-                else:
-                  new_out_path.append('primary_{0}_'.format(self.opts.output_id)+path[1][0]+'_visible_{0}'.format(self.opts.output_format[0]))                
-              for i, path in enumerate(output_file_paths):
-                shutil.move(path[0], new_out_path[i])
+            sto.close()
         if self.opts.make_HTML:
             self.makeHtml()
         return retval
@@ -704,8 +679,7 @@ def main():
     a('--output_dir',default='./')
     a('--output_html',default=None)
     a('--input_tab',default='None', nargs='*')
-    a('--output_tab', dest='output_tab', action='append', default=[])
-    a('--output_id', default=None)
+    a('--output_tab',default='None')
     a('--user_email',default='Unknown')
     a('--bad_user',default=None)
     a('--make_Tool',default=None)
@@ -716,7 +690,7 @@ def main():
     a('--tool_version',default=None)
     a('--include_dependencies',default=None)
     a('--dockerized',default=0)
-    a('--output_format', dest='output_format', action='append', default=[])
+    a('--output_format', default='tabular')
     a('--input_format', dest='input_formats', action='append', default=[])
     a('--additional_parameters', dest='additional_parameters', action='append', default=[])
     opts = op.parse_args()

@@ -79,7 +79,7 @@ def build_docker(dockerfile, docker_client, image_tag='base'):
         print 'docker container exists, skipping build'
         return image_id
     print "Building Docker image, using Dockerfile:{0}".format(dockerfile)
-    build_process=docker_client.build(fileobj=open(dockerfile, 'r'), image_tag=image_id)
+    build_process=docker_client.build(fileobj=open(dockerfile, 'r'), tag=image_id)
     print "succesfully dispatched docker build process, building now"
     build_log=[line for line in build_process] #will block until image is built.
     return image_id 

@@ -68,7 +68,7 @@ def edit_dockerfile(dockerfile):
        otherwise we have a mismatch in the file permissions inside the container'''
     uid=os.getuid()
     for line in fileinput.FileInput(dockerfile, inplace=1):
-        sys.stdout.write(line.replace("RUN adduser galaxy\n",  "RUN adduser galaxy -u {0}\n".format(uid)))
+        sys.stdout.write(re.sub("RUN adduser galaxy.*",  "RUN adduser galaxy -u {0}\n".format(uid), line))
 
 def build_docker(dockerfile, docker_client, image_tag='base'):
     '''Given the path to a dockerfile, and a docker_client, build the image, if it does not

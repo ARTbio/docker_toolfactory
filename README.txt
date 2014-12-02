@@ -1,5 +1,5 @@
 # WARNING before you start
-# Install this tool on a private Galaxy ONLY
+# Install this tool for test purposes only
 # Please NEVER on a public or production instance
 # updated august 8 2014 to fix bugs reported by Marius van den Beek
 
@@ -38,7 +38,7 @@ scripting to designated administrative users of a Galaxy server, allowing them t
 in R, python, sh and perl over a single input data set, writing a single new data set as output.
 
 In addition, this tool optionally generates very simple new Galaxy tools, that effectively
-freeze the supplied script into a new, ordinary Galaxy tool that runs it over a single input file, 
+freeze the supplied script into a new, ordinary Galaxy tool that runs it over one or more input files, 
 working just like any other Galaxy tool for your users. 
 
 To use the ToolFactory, you should have prepared a script to paste into a text box,
@@ -319,4 +319,3 @@ Licensed under the LGPL
 **Obligatory screenshot**
 
 http://bitbucket.org/fubar/galaxytoolmaker/src/fda8032fe989/images/dynamicScriptTool.png
-

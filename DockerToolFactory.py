@@ -154,24 +154,25 @@ class ScriptRunner:
         self.image_tag = image_tag
         os.chdir(abspath(opts.output_dir))
         self.thumbformat = 'png'
-        self.toolname = re.sub('[^a-zA-Z0-9_]+', '', opts.tool_name) # a sanitizer now does this but..
+        self.toolname_sanitized = re.sub('[^a-zA-Z0-9_]+', '_', opts.tool_name) # a sanitizer now does this but..
+        self.toolname = opts.tool_name
         self.toolid = self.toolname
         self.myname = sys.argv[0] # get our name because we write ourselves out as a tool later
         self.pyfile = self.myname # crude but efficient - the cruft won't hurt much
-        self.xmlfile = '%s.xml' % self.toolname
+        self.xmlfile = '%s.xml' % self.toolname_sanitized
         s = open(self.opts.script_path,'r').readlines()
         s = [x.rstrip() for x in s] # remove pesky dos line endings if needed
         self.script = '\n'.join(s)
-        fhandle,self.sfile = tempfile.mkstemp(prefix=self.toolname,suffix=".%s" % (opts.interpreter))
+        fhandle,self.sfile = tempfile.mkstemp(prefix=self.toolname_sanitized,suffix=".%s" % (opts.interpreter))
         tscript = open(self.sfile,'w') # use self.sfile as script source for Popen
         tscript.write(self.script)
         tscript.close()
         self.indentedScript = '\n'.join([' %s' % html_escape(x) for x in s]) # for restructured text in help
         self.escapedScript = '\n'.join([html_escape(x) for x in s])
-        self.elog = os.path.join(self.opts.output_dir,"%s_error.log" % self.toolname)
+        self.elog = os.path.join(self.opts.output_dir,"%s_error.log" % self.toolname_sanitized)
         if opts.output_dir: # may not want these complexities
-            self.tlog = os.path.join(self.opts.output_dir,"%s_runner.log" % self.toolname)
-            art = '%s.%s' % (self.toolname,opts.interpreter)
+            self.tlog = os.path.join(self.opts.output_dir,"%s_runner.log" % self.toolname_sanitized)
+            art = '%s.%s' % (self.toolname_sanitized,opts.interpreter)
             artpath = os.path.join(self.opts.output_dir,art) # need full path
             artifact = open(artpath,'w') # use self.sfile as script source for Popen
             artifact.write(self.script)
@@ -187,7 +188,7 @@ class ScriptRunner:
 	for input in opts.input_tab:
 	  a(input) 
         if opts.output_tab == 'None': #If tool generates only HTML, set output name to toolname
-            a(str(self.toolname)+'.out')
+            a(str(self.toolname_sanitized)+'.out')
         a(opts.output_tab)
 	for param in opts.additional_parameters:
           param, value=param.split(',')
@@ -196,9 +197,9 @@ class ScriptRunner:
         #print self.cl
         self.outFormats = opts.output_format
         self.inputFormats = [formats for formats in opts.input_formats]
-        self.test1Input = '%s_test1_input.xls' % self.toolname
-        self.test1Output = '%s_test1_output.xls' % self.toolname
-        self.test1HTML = '%s_test1_output.html' % self.toolname
+        self.test1Input = '%s_test1_input.xls' % self.toolname_sanitized
+        self.test1Output = '%s_test1_output.xls' % self.toolname_sanitized
+        self.test1HTML = '%s_test1_output.html' % self.toolname_sanitized
 
     def makeXML(self):
         """
@@ -274,10 +275,10 @@ o.close()
 %(help)s
 
 </help>
-</tool>""" # needs a dict with toolname, toolid, interpreter, scriptname, command, inputs as a multi line string ready to write, outputs ditto, help ditto
+</tool>""" # needs a dict with toolname, toolname_sanitized, toolid, interpreter, scriptname, command, inputs as a multi line string ready to write, outputs ditto, help ditto
 
         newCommand="""
-        %(toolname)s.py --script_path "$runMe" --interpreter "%(interpreter)s" 
+        %(toolname_sanitized)s.py --script_path "$runMe" --interpreter "%(interpreter)s" 
             --tool_name "%(toolname)s" %(command_inputs)s %(command_outputs)s """
         # may NOT be an input or htmlout - appended later
         tooltestsTabOnly = """
@@ -355,6 +356,7 @@ o.close()
             xdict['inputs'] = ''
         # I find setting the job name not very logical. can be changed in workflows anyway. xdict['inputs'] += '<param name="job_name" type="text" label="Supply a name for the outputs to remind you what they contain" value="%s"/> \n' % self.toolname
         xdict['toolname'] = self.toolname
+        xdict['toolname_sanitized'] = self.toolname_sanitized
         xdict['toolid'] = self.toolid
         xdict['interpreter'] = self.opts.interpreter
         xdict['scriptname'] = self.sfile
@@ -364,7 +366,7 @@ o.close()
         else:
             xdict['command_outputs'] += ' --output_dir "./"' 
         #print self.opts.output_tab
-        if not self.opts.output_tab:
+        if self.opts.output_tab!="None":
             xdict['command_outputs'] += ' --output_tab "$tab_file"'
             xdict['outputs'] += ' <data format="%s" name="tab_file"/>\n' % self.outFormats
         xdict['command'] = newCommand % xdict
@@ -380,13 +382,13 @@ o.close()
     def makeTooltar(self):
         """
         a tool is a gz tarball with eg
-        /toolname/tool.xml /toolname/tool.py /toolname/test-data/test1_in.foo ...
+        /toolname_sanitized/tool.xml /toolname_sanitized/tool.py /toolname_sanitized/test-data/test1_in.foo ...
         """
         retval = self.run()
         if retval:
             print >> sys.stderr,'## Run failed. Cannot build yet. Please fix and retry'
             sys.exit(1)
-        tdir = self.toolname
+        tdir = self.toolname_sanitized
         os.mkdir(tdir)
         self.makeXML()
         if self.opts.make_HTML:
@@ -412,7 +414,7 @@ o.close()
                 shutil.copyfile(self.opts.output_html,os.path.join(testdir,self.test1HTML))
             if self.opts.output_dir:
                 shutil.copyfile(self.tlog,os.path.join(testdir,'test1_out.log'))
-        outpif = '%s.py' % self.toolname # new name
+        outpif = '%s.py' % self.toolname_sanitized # new name
         outpiname = os.path.join(tdir,outpif) # path for the tool tarball
         pyin = os.path.basename(self.pyfile) # our name - we rewrite ourselves (TM)
         notes = ['# %s - a self annotated version of %s generated by running %s\n' % (outpiname,pyin,pyin),]
@@ -430,9 +432,9 @@ o.close()
         xtname = os.path.join(tdir,self.xmlfile)
         if not os.path.exists(xtname):
             shutil.copyfile(self.xmlfile,xtname)
-        tarpath = "%s.gz" % self.toolname
+        tarpath = "%s.gz" % self.toolname_sanitized
         tar = tarfile.open(tarpath, "w:gz")
-        tar.add(tdir,arcname=self.toolname)
+        tar.add(tdir,arcname=self.toolname_sanitized)
         tar.close()
         shutil.copyfile(tarpath,self.opts.new_tool)
         shutil.rmtree(tdir)

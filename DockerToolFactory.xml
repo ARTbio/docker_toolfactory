@@ -1,4 +1,4 @@
-<tool id="rgTF" name="Docker Tool Factory" version="0.1">
+<tool id="rgTF" name="Docker Tool Factory" version="0.1.1">
   <description>Makes scripts into tools using Docker</description>
    <requirements>
       <requirement type="package" version="9.10">ghostscript</requirement>
@@ -75,7 +75,7 @@
     <param name="tool_name" type="text" value="My dynamic script"   label="New tool ID and title for outputs" size="60"
          help="This will become the toolshed repository name so please choose thoughtfully to avoid namespace clashes with other tool writers">
         <sanitizer invalid_char="">
-            <valid initial="string.letters,string.digits"/>
+            <valid initial="string.printable"/>
         </sanitizer>
     </param>
     <conditional name="makeMode">
@@ -337,8 +337,8 @@ All rights reserved.
 Licensed under the LGPL_
 
 .. _LGPL: http://www.gnu.org/copyleft/lesser.html
-.. _GTF:  https://bitbucket.org/fubar/galaxytoolfactory
-.. _GTFI:  https://bitbucket.org/fubar/galaxytoolfactory/issues
+.. _GTF:  https://bitbucket.org/mvdbeek/dockertoolfactory
+.. _GTFI:  https://bitbucket.org/mvdbeek/dockertoolfactory/issues
 .. _Paper: http://bioinformatics.oxfordjournals.org/cgi/reprint/bts573?ijkey=lczQh1sWrMwdYWJ&amp;keytype=ref
 
 

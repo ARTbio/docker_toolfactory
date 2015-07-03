@@ -1,0 +1,15 @@
+# .shed.yml supporting automatic pushes.
+owner: mvdbeek
+name: docker_toolfactory
+description: docker toolfactory allows the execution of arbitrary scripts in a container
+long_description: |
+  docker toolfactory allows the execution of arbitrary scripts in a container, shielding the system
+  from malicious scripts. The toolfactory exclusively mounts input and output files.
+  As for the toolfactory and toolfactory2 tool, scripts can be made into toolshed-compatible tools.
+categories:
+  - Tool generators
+homepage_url: http://drosophile.org/
+remote_repository_url: https://bitbucket.org/mvdbeek/dockertoolfactory/
+toolshed:
+  - https://lbcd41.snv.jussieu.fr/toolshed/
+  - testtoolshed

@@ -1,12 +1,11 @@
 # WARNING before you start
-# Install this tool for test purposes only
-# Please NEVER on a public or production instance
-# updated august 8 2014 to fix bugs reported by Marius van den Beek
+# Carefully inspect tool usage. If bugs are found within the tool, users may be able to break
+# out of the container and mount files on the host system.
 
 This is a fork of toolfactory that makes use of Docker to sandbox the generated script.
-As such you need to have the system user under which galaxy tools are executed be able to run Docker. On Ubuntu you can do this by
-adding your galaxy user to the docker group (http://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo).
-Here is the short form for installing Docker from the official docker Ubuntu Trusty repository:
+As such you need to have the system user under which galaxy tools are executed be able to run Docker. 
+On Ubuntu you can do this by adding your galaxy user to the docker group (http://askubuntu.com/questions/477551/how-can-i-use-docker-without-sudo).
+Assuming galaxy runs as the user galaxy, this is the short form for installing Docker from the official docker Ubuntu Trusty repository:
 
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
 sudo sh -c "echo deb https://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list"
@@ -15,31 +14,31 @@ sudo apt-get install lxc-docker
 sudo gpasswd -a galaxy docker
 sudo service docker restart
 
-Eventually the galaxy process might need ot be restarted.
+Eventually the galaxy process might need to be restarted.
 
 Note that this could bring severe security problems in case untrusted users can become this user.
 If you want to use this tool, read and understand the following article:
 https://docs.docker.com/articles/security/#docker-daemon-attack-surface
 
-Work is ongoing, some important features are missing, like being able to manage containers and
-to limit resource useage.
+Work is ongoing, some important features are missing, like being able to manage containers.
+Currently, only a single container with pre-installed tools is available.
 
-This is an alpha-stage, potentially dangerous tool.
-
+This is an beta-stage, potentially dangerous tool.
 
 Please cite:
-http://bioinformatics.oxfordjournals.org/cgi/reprint/bts573?ijkey=lczQh1sWrMwdYWJ&keytype=ref 
+  - http://bioinformatics.oxfordjournals.org/cgi/reprint/bts573?ijkey=lczQh1sWrMwdYWJ&keytype=ref 
+  - van den Beek M., Antoniewski C., in preparation 
 if you use this tool in your published work.
 
 *Short Story*
 
-This is an unusual Galaxy tool that exposes unrestricted and therefore extremely dangerous
-scripting to designated administrative users of a Galaxy server, allowing them to run scripts 
-in R, python, sh and perl over a single input data set, writing a single new data set as output.
+This is an unusual Galaxy tool that exposes unrestricted scripting to users of a Galaxy server, 
+allowing them to run scripts in R, python, sh and perl over input datasets, 
+writing a single new data set as output.
 
 In addition, this tool optionally generates very simple new Galaxy tools, that effectively
 freeze the supplied script into a new, ordinary Galaxy tool that runs it over one or more input files, 
-working just like any other Galaxy tool for your users. 
+working just like any other Galaxy tool for your users.
 
 To use the ToolFactory, you should have prepared a script to paste into a text box,
 and a small test input example ready to select from your history to test your new script.
@@ -56,7 +55,7 @@ generated in the form of a new Galaxy datatype - toolshed.gz - as the name sugge
 it's an archive ready to upload to a Galaxy ToolShed as a new tool repository.
 
 Once it's in a ToolShed, it can be installed into any local Galaxy server from
-the server administrative interface.
+the Galaxy administrative interface.
 
 Once the new tool is installed, local users can run it - each time, the script that was supplied
 when it was built will be executed with the input chosen from the user's history. In other words,
@@ -105,7 +104,7 @@ subdirectory such as tools/toolfactory Your tool_conf.xml needs a new entry poin
 file - something like::
 
   <section name="Tool building tools" id="toolbuilders">
-    <tool file="toolfactory/rgToolFactory.xml"/>
+    <tool file="DockerToolFactory.xml"/>
   </section>
 
 If not already there (I just added it to datatypes_conf.xml.sample), please add:
@@ -116,22 +115,22 @@ Ensure that html sanitization is set to False and uncommented in universe_wsgi.i
 
 You'll have to restart the server for the new tool to be available.
 
-Of course, R, python, perl etc are needed on your path if you want to test scripts using those interpreters.
-Adding new ones to this tool code should be easy enough. Please make suggestions as bitbucket issues and code.
+R, python, perl are preloaded in the supplied Dockerfile.
+Upon first execution the Dockerfile will be used to build an image
+with varius pre-installed tools.
+Adding new ones should be easy enough, and follows standard conventions
+for Docker tools.
+Please make suggestions as bitbucket issues and code.
 The HTML file code automatically shrinks R's bloated pdfs, and depends on ghostscript. The thumbnails require imagemagick .
 
-* Restricted execution *
-The new tool factory tool will then be usable ONLY by admin users - people with IDs in admin_users in universe_wsgi.ini
-**Yes, that's right. ONLY admin_users can run this tool** Think about it for a moment. If allowed to run any
-arbitrary script on your Galaxy server, the only thing that would impede a miscreant bent on destroying all your
-Galaxy data would probably be lack of appropriate technical skills.
-
 *What it does* This is a tool factory for simple scripts in python, R and perl currently. 
-Functional tests are automatically generated. How cool is that. 
+Functional tests are automatically generated.
+On a technical level, a Docker container is started, and input and output files
+are made available to the container.
+After running, the docker container will be terminated.
 
-LIMITED to simple scripts that read one input from the history.
-Optionally can write one new history dataset,
-and optionally collect any number of outputs into links on an autogenerated HTML
+LIMITED to simple scripts that read inputs from the history.
+Optionally can write one new history dataset, and optionally collect any number of outputs into links on an autogenerated HTML
 index page for the user to navigate - useful if the script writes images and output files - pdf outputs
 are shown as thumbnails and R's bloated pdf's are shrunk with ghostscript so that and imagemagik need to
 be avaailable.
@@ -161,17 +160,6 @@ as a single Html history item - all output files are linked, thumbnails for all 
 Ugly but really inexpensive.
 
 Patches and suggestions welcome as bitbucket issues please? 
-
-long route to June 2012 product
-derived from an integrated script model  
-called rgBaseScriptWrapper.py
-Note to the unwary:
-  This tool allows arbitrary scripting on your Galaxy as the Galaxy user
-  There is nothing stopping a malicious user doing whatever they choose
-  Extremely dangerous!!
-  Totally insecure. So, trusted users only
-
-
 
 
 copyright ross lazarus (ross stop lazarus at gmail stop com) May 2012

@@ -70,8 +70,9 @@ def edit_dockerfile(dockerfile):
     for line in fileinput.FileInput(dockerfile, inplace=1):
         sys.stdout.write(re.sub("RUN adduser galaxy.*",  "RUN adduser galaxy -u {0}\n".format(uid), line))
 
+#TODO: try to download image it it exists.
 def build_docker(dockerfile, docker_client, image_tag='base'):
-    '''Given the path to a dockerfile, and a docker_client, build the image, if it does not
+    '''Given the path to a dockerfile, and a docker_client, try to build the image, if it does not
     exist yet.'''
     image_id='toolfactory/custombuild:'+image_tag
     existing_images=", ".join(["".join(d['RepoTags']) for d in docker_client.images()])
@@ -103,9 +104,29 @@ def construct_bind(host_path, container_path=False, binds=None, ro=True):
         binds[host_path]={'bind':container_path, 'ro':ro}
         return binds
 
+def exists_boot2docker():
+    '''
+    Try to see if boot2docker command is available.
+    If it is, run boot2docker shellinit
+    '''
+    return cmd_exists('boot2docker')
+
+def boot2docker_shellinit():
+    '''
+    '''
+    cmd="eval \"\$(boot2docker shellinit)\""
+    subprocess.call(cmd, shell=True)
+
 def switch_to_docker(opts):
     import docker #need local import, as container does not have docker-py
-    docker_client=docker.Client()
+    if exists_boot2docker():
+        boot2docker_shellinit()
+        from docker.utils import kwargs_from_env
+        kwargs = kwargs_from_env()
+        kwargs['tls'].assert_hostname = False
+        docker_client = docker.Client(**kwargs)
+    else:
+        docker_client=docker.Client()
     toolfactory_path=abspath(sys.argv[0])
     dockerfile=os.path.dirname(toolfactory_path)+'/Dockerfile'
     edit_dockerfile(dockerfile)
@@ -720,5 +741,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

@@ -16,6 +16,8 @@ sudo service docker restart
 
 Eventually the galaxy process might need to be restarted.
 
+On OSX, you need to boot2docker installed and available to the galaxy user.
+
 Note that this could bring severe security problems in case untrusted users can become this user.
 If you want to use this tool, read and understand the following article:
 https://docs.docker.com/articles/security/#docker-daemon-attack-surface

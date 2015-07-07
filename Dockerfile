@@ -29,7 +29,11 @@ RUN Rscript -e 'install.packages(c("latticeExtra", "ggplot2", "reshape", "gridEx
 #add galaxy user (could be any username).
 #1001 will be replaced by the actual user id of the system user
 #executing the galaxy tool, so that file write operations are possible.
-RUN adduser galaxy -u 1001
+RUN adduser galaxy -u 501
+
+
+
+
 
 #VOLUME ["/home/galaxy/"]
 RUN mkdir /home/galaxy/job_working_directory

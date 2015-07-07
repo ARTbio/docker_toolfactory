@@ -147,7 +147,7 @@ ${makeMode.help_text}
         <option value="perl">perl</option>
         <option value="sh">sh</option>
     </param>   
-    <param name="dynScript" label="Cut and paste the script to be executed here" type="text" value="" area="True" size="8x120"  
+    <param name="dynScript" label="Copy and paste the script to be executed here" type="text" value="" area="True" size="8x120"  
       help="Script must deal with two command line parameters: Path to input tabular file path (or 'None' if none selected) and path to output tabular history file (or 'None').">
       <sanitizer>
          <valid initial="string.printable">

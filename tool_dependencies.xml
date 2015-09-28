@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <tool_dependency>
     <package name="ghostscript" version="9.10">
-        <repository changeset_revision="a285e78179bd" name="package_ghostscript_9_10" owner="devteam" prior_installation_required="True" toolshed="http://toolshed.g2.bx.psu.edu/" />
+        <repository name="package_ghostscript_9_10" owner="devteam"/>
     </package>
-    <package name="graphicsmagick" version="1.3.18">
-        <repository changeset_revision="4ce7b22bf603" name="package_graphicsmagick_1_3" owner="iuc" prior_installation_required="True" toolshed="http://toolshed.g2.bx.psu.edu/" />
+    <package name="graphicsmagick" version="1.3.20">
+        <repository name="package_graphicsmagick_1_3_20" owner="iuc"/>
     </package>
     <package name="docker-py" version="0.4.0">
         <install version="1.0">
@@ -15,6 +15,7 @@
         </install>
     </package>
         <readme>
-            Only Admins can use this tool generator but please do NOT install on a public facing Galaxy as it exposes unrestricted scripting as your Galaxy user
+		This is a fork of toolfactory that makes use of Docker to sandbox the generated script.
+		As such you need to have the system user under which galaxy tools are executed be able to run Docker. 
        </readme>
 </tool_dependency>

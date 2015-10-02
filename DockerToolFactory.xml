@@ -133,6 +133,7 @@
             <when value="">
             </when>
         </conditional>
+        <param name="out_format" type="text" value="txt" hidden="True"/>
         <param name="make_HTML" type="select"
                label="Create an HTML report with links to all output files and thumbnail links to PDF images" size="60"
                help="Recommended for presenting complex outputs in an accessible manner. Turn off for simple tools so they just create one output">
@@ -155,7 +156,7 @@
                 </param>
             </when>
             <when value="no">
-                 <param name="out_format" type="text" value="" optional="True" hidden="True"/>
+                 <param name="out_format" type="text" value="txt" optional="True" hidden="True"/>
             </when>
         </conditional>
         <param name="interpreter" type="select" label="Select the interpreter for your code">
@@ -196,8 +197,9 @@
             <param name="interpreter" value="Rscript"/>
             <param name="make_HTML" value="yes"/>
             <param name="generate_simple_output|makeTAB" value="no"/>
-            <param name="dynScript" value="for (i in 1:10) { foo = runif(100) bar = rnorm(100) bar = foo + 0.05*bar pdf(paste(&apos;yet&apos;,i,&quot;anotherplot.pdf&quot;,sep=&apos;_&apos;)) plot(foo,bar,main=paste(&quot;Foo by Bar plot #&quot;,i),col=&quot;maroon&quot;, pch=3,cex=0.6) dev.off() foo = data.frame(a=runif(100),b=runif(100),c=runif(100),d=runif(100),e=runif(100),f=runif(100)) bar = as.matrix(foo) pdf(paste(&apos;yet&apos;,i,&quot;anotherheatmap.pdf&quot;,sep=&apos;_&apos;)) heatmap(bar,main=&apos;Random Heatmap&apos;) dev.off() }"/>
-            <param name="html_file" file="My_dynamic_script.html.zip"/>
+            <param name="out_format" value="txt"/>
+	    <param name="dynScript" value="for (i in 1:10) {; foo = runif(100); bar = rnorm(100); bar = foo + bar; pdf(&quot;anotherplot.pdf&quot;); plot(1,2); dev.off();}"/>
+            <output name="html_file" file="html_output/My_dynamic_script_html.html" compare="diff"/>
         </test>
     </tests>
     <expand macro="help_macro"/>

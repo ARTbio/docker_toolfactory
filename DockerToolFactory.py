@@ -26,20 +26,28 @@ toolFactoryURL = 'https://bitbucket.org/fubar/galaxytoolfactory'
 toolhtmldepskel = """<?xml version="1.0"?>
 <tool_dependency>
     <package name="ghostscript" version="9.10">
-        <repository name="package_ghostscript_9_10" owner="devteam" prior_installation_required="True" />
+        <repository name="package_ghostscript_9_10" owner="devteam"/>
     </package>
-    <package name="graphicsmagick" version="1.3.18">
-        <repository name="package_graphicsmagick_1_3" owner="iuc" prior_installation_required="True" />
+    <package name="graphicsmagick" version="1.3.20">
+        <repository name="package_graphicsmagick_1_3_20" owner="iuc"/>
+    </package>
+    <package name="docker-py" version="0.4.0">
+        <install version="1.0">
+            <actions>
+                <action type="setup_virtualenv">docker-py==0.4.0
+                </action>
+            </actions>
+        </install>
     </package>
         <readme>
-           %s
+                %s
        </readme>
 </tool_dependency>
 """
 
 protorequirements = """<requirements>
       <requirement type="package" version="9.10">ghostscript</requirement>
-      <requirement type="package" version="1.3.18">graphicsmagick</requirement>
+      <requirement type="package" version="1.3.20">graphicsmagick</requirement>
       <container type="docker">toolfactory/custombuild:%s</container>
 </requirements>"""
 

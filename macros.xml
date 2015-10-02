@@ -1,7 +1,6 @@
-
-<macro>
-    <xml name="help_macro">
-    <help>
+<macros>
+    <macro name="help_macro">
+    <help><![CDATA[
 .. class:: warningmark
 
 **Details and attribution** Docker_toolfactory_
@@ -36,7 +35,6 @@ Note that if an optional HTML output is selected, all the output files created b
 This can be handy for complex scripts creating lots of output.
 
 **Examples**
-<![CDATA[
 
 Each of these following trivial examples can be cut and pasted into the script box for testing.
 Please make sure you choose the appropriate interpreter and upload and select a suitable small matching test data input
@@ -156,8 +154,6 @@ A trivial perl script example to show that even perl works::
  close(OF);
  close(NF);
 
-]]>
-
 **Citation**
 
 
@@ -178,9 +174,7 @@ Licensed under the LGPL_
 .. _Docker_toolfactory:  https://bitbucket.org/mvdbeek/dockertoolfactory
 .. _Issues:  https://bitbucket.org/mvdbeek/dockertoolfactory/issues
 .. _Paper: http://bioinformatics.oxfordjournals.org/cgi/reprint/bts573?ijkey=lczQh1sWrMwdYWJ&amp;keytype=ref
-
+]]>
     </help>
-    </xml>
-    <xml name="test_data_macro">
-    </xml>
-</macro>
+    </macro>
+</macros>

@@ -167,7 +167,7 @@ def switch_to_docker(opts):
     cmd = ['python', '-u'] + sys.argv + ['--dockerized', '1']
     container = docker_client.create_container(
         image=image_id,
-        user='galaxy',
+        user=os.getuid(),
         volumes=volumes,
         command=cmd
     )

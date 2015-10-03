@@ -1,9 +1,9 @@
 # Toolfactory image
 #
-# VERSION       0.1
+# VERSION       0.2
 # This Dockerfile is the base system for executing scripts by the DockerToolFactory.
 
-FROM debian:jessie
+FROM toolshed/requirements
 
 MAINTAINER Marius van den Beek, m.vandenbeek@gmail.com
 
@@ -14,18 +14,14 @@ ENV DEBIAN_FRONTEND noninteractive
 #1001 will be replaced by the actual user id of the system user
 #executing the galaxy tool, so that file write operations are possible.
 RUN adduser galaxy -u 1000
+
+
 ADD adduser.sh /usr/local/bin/adduser.sh
 RUN adduser.sh
 
-RUN apt-get -qq update
-
-# Install all requirements that are recommend by the Galaxy project
-RUN apt-get install --no-install-recommends -y autoconf automake build-essential gfortran \
-cmake git-core libatlas-base-dev libblas-dev liblapack-dev mercurial subversion python-dev \
-pkg-config openjdk-7-jre python-setuptools adduser zlib1g-dev ghostscript r-base-core \
-graphicsmagick-imagemagick-compat
-
-RUN apt-get install -y python-virtualenv python-pip libfreetype6-dev exonerate bedtools wget curl \
+RUN ulimit -n 1024 && apt-get update -qq && apt-get install -y --no-install-recommends software-properties-common && apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E084DAB9 && add-apt-repository \
+"deb http://cran.irsn.fr/bin/linux/ubuntu trusty/" && apt-get update -qq && apt-get upgrade && apt-get install -y r-base-core r-base-dev \
+adduser zlib1g-dev python-virtualenv python-pip libfreetype6-dev bedtools wget curl \
 libcurl4-openssl-dev libssl-dev libreadline-dev libxml2-dev samtools liblzma-dev \
 libpcre3-dev libbz2-dev
 
@@ -34,7 +30,6 @@ RUN pip install numpy pysam tornado matplotlib pycurl pip pandas ipython rpy2
 #RUN Rscript -e 'source("http://bioconductor.org/biocLite.R"); biocLite("DESeq", "DESeq2", "edgeR", "EDASeq")'
 #RUN Rscript -e 'install.packages(c("latticeExtra", "ggplot2", "reshape", "gridExtra"), dependencies=TRUE, repos="http://cran.us.r-project.org")'
 
-VOLUME ["/home/galaxy/"]
 RUN mkdir /home/galaxy/job_working_directory
 WORKDIR /home/galaxy/job_working_directory
 USER galaxy

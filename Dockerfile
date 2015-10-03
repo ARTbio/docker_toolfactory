@@ -23,7 +23,7 @@ RUN ulimit -n 1024 && apt-get update -qq && apt-get install -y --no-install-reco
 "deb http://cran.irsn.fr/bin/linux/ubuntu trusty/" && apt-get update -qq && apt-get upgrade && apt-get install -y r-base-core r-base-dev \
 adduser zlib1g-dev python-virtualenv python-pip libfreetype6-dev bedtools wget curl \
 libcurl4-openssl-dev libssl-dev libreadline-dev libxml2-dev samtools liblzma-dev \
-libpcre3-dev libbz2-dev
+libpcre3-dev libbz2-dev ghostscript graphicsmagick-imagemagick-compat
 
 RUN pip install numpy pysam tornado matplotlib pycurl pip pandas ipython rpy2
 
